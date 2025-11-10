@@ -10,7 +10,7 @@ import base64, os, json
 # -----------------------------
 #  Inițializare
 # -----------------------------
-load_dotenv()  # încarcă cheia din .env
+load_dotenv()  
 Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
@@ -51,7 +51,8 @@ from transformers import pipeline
 from PIL import Image
 import io
 
-# creează pipeline o singură dată (la startup)
+
+
 image_classifier = pipeline("image-classification", model="google/vit-base-patch16-224")
 #image_classifier = pipeline("image-classification", model="dima806/food101-vit-base-patch16-224")
 
