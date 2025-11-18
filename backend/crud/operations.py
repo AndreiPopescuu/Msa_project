@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
-from models.user import User
-from models.drink import Drink
-from models.session import Session as UserSession
-from schemas import UserCreate, DrinkCreate
+from ..models.user import User
+from ..models.drink import Drink
+from ..models.session import Session as UserSession
+from ..schemas import UserCreate, DrinkCreate
 from datetime import datetime
 
 def create_user(db: Session, user: UserCreate):
