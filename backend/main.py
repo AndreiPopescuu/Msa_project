@@ -54,6 +54,12 @@ class LoginRequest(BaseModel):
     password: str
 
 
+# Model pentru datele ce pot fi actualizate
+class UserUpdate(BaseModel):
+    name: str
+    weight: float
+    height: float
+
 # -----------------------------
 #  Endpointuri
 # -----------------------------
@@ -117,35 +123,65 @@ image_classifier = pipeline("image-classification", model="google/vit-base-patch
 
 # image_classifier = pipeline("image-classification", model="dima806/food101-vit-base-patch16-224")
 
-@app.post("/identifyDrink")
-async def identify_drink_local(file: UploadFile = File(...), user_id: int = 1, db: Session = Depends(get_db)):
+# În main.py
+
+@app.get("/drinks/{user_id}")
+def get_user_drinks(user_id: int, db: Session = Depends(get_db)):
     """
-    Primește o imagine, folosește un model open-source (ViT) pentru clasificare,
-    și adaugă automat băutura în baza de date.
+    Acum accesăm Clasa din interiorul Modulului.
+    Structura este: models (folder) -> drink (fișier) -> Drink (clasa/tabel)
     """
-    # citește imaginea primită
+    # Încearcă varianta asta (cu .Drink la final)
+    return db.query(models.drink.Drink)\
+             .filter(models.drink.Drink.user_id == user_id)\
+             .order_by(models.drink.Drink.id.desc())\
+             .all()
+
+@app.put("/users/{user_id}")
+def update_user(user_id: int, user_update: UserUpdate, db: Session = Depends(get_db)):
+    db_user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Actualizăm câmpurile
+    db_user.name = user_update.name
+    # Presupunem că ai adăugat coloanele weight și height în baza de date
+    # Dacă nu, trebuie să le adaugi în models.py sau să sari peste ele momentan
+    db_user.weight = user_update.weight
+    db_user.height = user_update.height
+
+    db.commit()
+    db.refresh(db_user)
+    return {"message": "Profil actualizat!", "user": db_user}
+
+@app.post("/identify_drink")
+@app.post("/identify_drink")
+async def identify_drink(file: UploadFile = File(...)):
+    """
+    Doar identifică imaginea și returnează numele.
+    NU salvează nimic în baza de date (asta face butonul 'Save' din aplicație).
+    """
+    # 1. Citește imaginea
     image_bytes = await file.read()
     image = Image.open(io.BytesIO(image_bytes))
 
-    # clasifică imaginea
+    # 2. Clasifică imaginea (folosind modelul tău ViT)
     predictions = image_classifier(image)
     top = predictions[0]
 
     name = top["label"]
     confidence = round(top["score"] * 100, 2)
 
-    # simplificăm: punem valori default pentru alcool și volum
-    new_drink = DrinkCreate(
-        user_id=user_id,
-        name=name,
-        alcohol_percent=5.0,  # poți schimba în funcție de categorie
-        volume_ml=500
-    )
+    # Logica simplă pentru alcool (poți să o rafinezi)
+    estimated_abv = 5.0
+    if "vodka" in name.lower() or "whisky" in name.lower():
+        estimated_abv = 40.0
+    elif "wine" in name.lower():
+        estimated_abv = 12.0
 
-    operations.add_drink(db, new_drink)
-
+    # 3. Returnăm doar datele pentru Frontend, FĂRĂ să salvăm în DB
     return {
-        "message": "Drink added successfully 🍺",
-        "prediction": {"label": name, "confidence": confidence},
-        "data": new_drink
+        "name": name,
+        "abv": estimated_abv,
+        "confidence": confidence
     }

@@ -5,28 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5201c4bc-fd11-493f-acd4-96ac643cd4e7" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/pythonProject2.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/pythonProject2.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/crud/operations.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/crud/operations.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/models/drink.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/models/drink.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/models/session.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/models/session.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/models/user.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/models/user.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/android/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/android/app/src/main/AndroidManifest.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/lib/core/api/api_client.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/core/api/api_client.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/main.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/lib/screens/add_drink_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/screens/add_drink_screen.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/lib/screens/home_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/screens/home_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/lib/screens/login_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/screens/login_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/linux/flutter/generated_plugin_registrant.cc" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/linux/flutter/generated_plugin_registrant.cc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/linux/flutter/generated_plugin_registrant.h" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/linux/flutter/generated_plugin_registrant.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/linux/flutter/generated_plugins.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/linux/flutter/generated_plugins.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/macos/Flutter/GeneratedPluginRegistrant.swift" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/macos/Flutter/GeneratedPluginRegistrant.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/pubspec.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/pubspec.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/windows/flutter/generated_plugin_registrant.cc" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/windows/flutter/generated_plugin_registrant.cc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/windows/flutter/generated_plugin_registrant.h" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/windows/flutter/generated_plugin_registrant.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/windows/flutter/generated_plugins.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/windows/flutter/generated_plugins.cmake" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -98,7 +83,10 @@
       <workItem from="1762772671695" duration="3127000" />
       <workItem from="1762777557873" duration="711000" />
       <workItem from="1763463615220" duration="266000" />
-      <workItem from="1766318835548" duration="7169000" />
+      <workItem from="1766318835548" duration="7338000" />
+      <workItem from="1767458049515" duration="781000" />
+      <workItem from="1767710317902" duration="4779000" />
+      <workItem from="1767789092548" duration="1717000" />
     </task>
     <servers />
   </component>

@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart'; // Import necesar pentru kIsWeb
+import 'package:image_picker/image_picker.dart'; 
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class ApiClient {
   // 🔹 LOGICĂ AUTOMATĂ PENTRU IP
@@ -12,6 +14,32 @@ class ApiClient {
       // Dacă rulezi pe Emulator Android
       // (Dacă folosești telefon fizic, schimbă aici cu IP-ul PC-ului tău, ex: 192.168.1.5:8000)
       return 'http://10.0.2.2:8000';
+    }
+  }
+
+
+  /*Future<Response> identifyDrink(XFile imageFile) async {
+    // 1. Pregătim fișierul
+    String fileName = imageFile.path.split('/').last;
+    
+    // 2. Îl împachetăm ca FormData (așa cum vrea serverul)
+    FormData formData = FormData.fromMap({
+      "file": await MultipartFile.fromFile(
+        imageFile.path,
+        filename: fileName,
+      ),
+    });
+    return await _dio.post('/identify_drink', data: formData);
+  }*/
+
+  Future<List<dynamic>> getUserDrinks(int userId) async {
+    try {
+      final response = await _dio.get('/drinks/$userId');
+      // Returnăm lista de date (ex: [{name: "Bere", ...}, {name: "Vin", ...}])
+      return response.data; 
+    } catch (e) {
+      print("Eroare la preluarea istoricului: $e");
+      return []; // Dacă e eroare, întoarcem o listă goală ca să nu crape aplicația
     }
   }
 
@@ -74,21 +102,47 @@ class ApiClient {
   }
 
   // ✅ 5. AI - IDENTIFICARE BĂUTURĂ (Upload Poză)
-  Future<Response> identifyDrink(String filePath, int userId) async {
-    try {
-      String fileName = filePath.split('/').last;
-      
-      FormData formData = FormData.fromMap({
-        "file": await MultipartFile.fromFile(filePath, filename: fileName),
-      });
+  Future<Response> identifyDrink(XFile imageFile) async {
+    String fileName = imageFile.name; // Luăm numele direct din XFile
+    
+    FormData formData;
 
-      return await _dio.post(
-        '/identifyDrink',
-        queryParameters: {'user_id': userId},
-        data: formData,
-      );
+    if (kIsWeb) {
+      // --- LOGICA PENTRU WEB (CHROME) ---
+      // Pe web nu avem "cale", deci citim fișierul ca o serie de bytes (0 și 1)
+      final bytes = await imageFile.readAsBytes();
+      formData = FormData.fromMap({
+        "file": MultipartFile.fromBytes(
+          bytes, 
+          filename: fileName
+        ),
+      });
+    } else {
+      // --- LOGICA PENTRU MOBIL (ANDROID) ---
+      // Pe mobil avem acces la fișiere, e mai eficient să trimitem calea
+      formData = FormData.fromMap({
+        "file": await MultipartFile.fromFile(
+          imageFile.path, 
+          filename: fileName
+        ),
+      });
+    }
+
+    // Trimitem la server
+    return await _dio.post('/identify_drink', data: formData);
+  }
+
+  Future<bool> updateUserProfile(int userId, String name, double weight, double height) async {
+    try {
+      await _dio.put('/users/$userId', data: {
+        "name": name,
+        "weight": weight,
+        "height": height,
+      });
+      return true; // Succes
     } catch (e) {
-      rethrow;
+      print("Eroare update profil: $e");
+      return false; // Eșec
     }
   }
 }
