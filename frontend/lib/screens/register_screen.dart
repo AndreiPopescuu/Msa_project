@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:flutter/foundation.dart' show kIsWeb;
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -13,35 +12,26 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  // Controllere pentru a prelua textul din input-uri
+  // Controllere
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController weightController = TextEditingController();
   final TextEditingController heightController = TextEditingController();
   
-  // Valoare default pentru Gen
   String selectedGender = 'male';
 
-  // Funcția de înregistrare
   Future<void> registerUser() async {
     if (!_formKey.currentState!.validate()) return;
 
-    // 2. LOGICĂ PENTRU DETECTAREA PLATFORMEI (WEB vs ANDROID)
-    String baseUrl;
-    
-    if (kIsWeb) {
-      // Dacă suntem pe Web (Chrome), folosim localhost standard
-      baseUrl = 'http://127.0.0.1:8000'; 
-    } else {
-      // Dacă suntem pe mobil (Emulator Android), folosim 10.0.2.2
-      baseUrl = 'http://10.0.2.2:8000'; 
-    }
+    // 🔹 MODIFICAREA MAGICĂ:
+    // Nu mai folosim if/else cu 10.0.2.2 sau localhost.
+    // Folosim direct link-ul de Cloud (Render) care merge oriunde.
+    const String baseUrl = 'https://drink-tracker-2vyc.onrender.com';
 
     final url = Uri.parse('$baseUrl/register'); 
     
-    // Debugging: Să vedem în consolă ce URL a ales
-    print('Încerc conectarea la: $url'); 
+    print('🚀 Încerc conectarea la: $url'); 
 
     try {
       final response = await http.post(
@@ -49,6 +39,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'name': nameController.text,
+          'username': nameController.text, // Backend-ul s-ar putea să ceară 'username' în loc de 'name'
           'email': emailController.text,
           'password': passwordController.text,
           'gender': selectedGender,
@@ -57,22 +48,32 @@ class _RegisterScreenState extends State<RegisterScreen> {
         }),
       );
 
+      print("Status Code: ${response.statusCode}");
+      print("Response Body: ${response.body}");
+
       if (response.statusCode == 200 || response.statusCode == 201) {
-        // Succes
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Cont creat cu succes! Te poți loga.')),
         );
         Navigator.pop(context); 
       } else {
-        // Eroare de la server
-        final errorData = jsonDecode(response.body);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(errorData['detail'] ?? 'Eroare la înregistrare')),
-        );
+        if (!mounted) return;
+        // Încercăm să decodăm eroarea, dar dacă nu e JSON valid, afișăm textul brut
+        try {
+            final errorData = jsonDecode(response.body);
+            ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(errorData['detail'] ?? 'Eroare la server')),
+            );
+        } catch (e) {
+            ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Eroare: ${response.body}')),
+            );
+        }
       }
     } catch (e) {
-      // Aici prinzi eroarea dacă serverul e oprit sau URL-ul e greșit
-      print("Eroare prinsă: $e"); 
+      print("❌ Eroare prinsă: $e"); 
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Eroare de conexiune: $e')),
       );
@@ -89,15 +90,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
           key: _formKey,
           child: Column(
             children: [
-              // Nume
               TextFormField(
                 controller: nameController,
-                decoration: const InputDecoration(labelText: 'Nume'),
+                decoration: const InputDecoration(labelText: 'Nume Utilizator'),
                 validator: (value) => value!.isEmpty ? 'Introdu numele' : null,
               ),
               const SizedBox(height: 10),
 
-              // Email
               TextFormField(
                 controller: emailController,
                 decoration: const InputDecoration(labelText: 'Email'),
@@ -106,7 +105,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 10),
 
-              // Parolă
               TextFormField(
                 controller: passwordController,
                 decoration: const InputDecoration(labelText: 'Parolă'),
@@ -115,7 +113,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 10),
 
-              // Gen (Dropdown)
               DropdownButtonFormField<String>(
                 value: selectedGender,
                 decoration: const InputDecoration(labelText: 'Gen'),
@@ -131,7 +128,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 10),
 
-              // Greutate
               TextFormField(
                 controller: weightController,
                 decoration: const InputDecoration(labelText: 'Greutate (kg)'),
@@ -140,7 +136,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 10),
 
-              // Înălțime
               TextFormField(
                 controller: heightController,
                 decoration: const InputDecoration(labelText: 'Înălțime (cm)'),
@@ -149,7 +144,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 20),
 
-              // Buton Register
               ElevatedButton(
                 onPressed: registerUser,
                 style: ElevatedButton.styleFrom(
