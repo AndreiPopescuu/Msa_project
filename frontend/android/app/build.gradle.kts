@@ -6,7 +6,8 @@ plugins {
 }
 
 android {
-    namespace = "com.example.frontend"
+    // 1. AICI ERA PROBLEMA: Schimbăm namespace-ul să coincidă cu ce vrei tu
+    namespace = "com.example.drink_tracker" 
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -20,10 +21,9 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.frontend"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
+        // 2. ȘI AICI: ID-ul aplicației trebuie să fie același
+        applicationId = "com.example.drink_tracker"
+        
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
@@ -32,8 +32,6 @@ android {
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
         }
     }

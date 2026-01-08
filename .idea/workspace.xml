@@ -5,13 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5201c4bc-fd11-493f-acd4-96ac643cd4e7" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/backend/requirements.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/android/app/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/android/app/build.gradle.kts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/android/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/android/app/src/main/AndroidManifest.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/android/app/src/main/kotlin/com/example/frontend/MainActivity.kt" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/lib/core/api/api_client.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/core/api/api_client.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/main.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/lib/screens/add_drink_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/screens/add_drink_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/lib/screens/home_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/screens/home_screen.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -87,6 +86,7 @@
       <workItem from="1767458049515" duration="781000" />
       <workItem from="1767710317902" duration="4779000" />
       <workItem from="1767789092548" duration="1717000" />
+      <workItem from="1767866781646" duration="3179000" />
     </task>
     <servers />
   </component>
