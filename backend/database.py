@@ -1,22 +1,27 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, declarative_base
+import os
+from dotenv import load_dotenv
 
-# datele tale de conectare
-USERNAME = "root"
-PASSWORD = "PopeAndre2213"  # schimbă dacă ai folosit altă parolă
-HOST = "localhost"
-PORT = "3306"
-DATABASE = "drunkmanager"
+load_dotenv()
 
-# URL de conexiune pentru MySQL + SQLAlchemy
-DATABASE_URL = f"mysql+pymysql://{USERNAME}:{PASSWORD}@{HOST}:{PORT}/{DATABASE}"
+# 1. Încercăm să luăm URL-ul de la Render (PostgreSQL)
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Creează engine-ul
-engine = create_engine(DATABASE_URL, echo=True)
+# 2. Logica de selecție
+if SQLALCHEMY_DATABASE_URL:
+    # Suntem pe Render (Cloud) -> Folosind PostgreSQL
+    # Render dă URL cu "postgres://", dar SQLAlchemy vrea "postgresql://"
+    if SQLALCHEMY_DATABASE_URL.startswith("postgres://"):
+        SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("postgres://", "postgresql://", 1)
+else:
+    # Suntem pe Laptop (Local) -> Folosim MySQL-ul tău vechi
+    # Modifică aici cu parola ta de root de pe laptop dacă vrei să testezi local
+    SQLALCHEMY_DATABASE_URL = "mysql+pymysql://root:PAROLA_TA@localhost/nume_baza_date"
 
-# Creează sesiunea
+# Crearea motorului de bază de date
+engine = create_engine(SQLALCHEMY_DATABASE_URL)
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Baza pentru modelele ORM
 Base = declarative_base()
