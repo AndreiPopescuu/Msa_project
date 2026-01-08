@@ -4,26 +4,18 @@ import 'package:image_picker/image_picker.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 class ApiClient {
-  // 🔹 LOGICĂ IP ACTUALIZATĂ
+  // 🔹 LOGICĂ NOUĂ (SIMPLIFICATĂ)
+  // Acum serverul este pe internet, deci folosim același link peste tot.
   static String get baseUrl {
-    if (kIsWeb) {
-      return 'http://127.0.0.1:8000'; // Chrome
-    } else {
-      // PENTRU TELEFON FIZIC (IP-ul tău din poză):
-      return 'http://192.168.0.195:8000'; 
-      
-      // NOTĂ: Dacă te muti vreodată pe Emulatorul Android din PC, 
-      // comentează linia de sus și folosește-o pe asta:
-      // return 'http://10.0.2.2:8000';
-    }
+    return 'https://drink-tracker-2vyc.onrender.com';
   }
 
   // Inițializare Dio
   final Dio _dio = Dio(
     BaseOptions(
       baseUrl: baseUrl, 
-      connectTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(seconds: 10),
+      connectTimeout: const Duration(seconds: 15), // Am mărit puțin timpul pentru că serverul Free poate fi lent uneori
+      receiveTimeout: const Duration(seconds: 15),
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -31,7 +23,7 @@ class ApiClient {
     ),
   );
 
-  // --- RESTUL FUNCȚIILOR (NU LE-AM MODIFICAT, SUNT BUNE) ---
+  // --- RESTUL FUNCȚIILOR (SUNT NESCHIMBATE) ---
 
   Future<List<dynamic>> getUserDrinks(int userId) async {
     try {
@@ -88,6 +80,7 @@ class ApiClient {
     String fileName = imageFile.name;
     FormData formData;
 
+    // Aici păstrăm logica pentru fișiere, deoarece Web și Mobile citesc fișierele diferit
     if (kIsWeb) {
       final bytes = await imageFile.readAsBytes();
       formData = FormData.fromMap({
