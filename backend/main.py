@@ -137,46 +137,54 @@ def update_user(user_id: int, user_update: UserUpdate, db: Session = Depends(get
     return {"message": "Profil actualizat!", "user": db_user}
 
 
+import gc
+
 @app.post("/identify_drink")
 async def identify_drink(file: UploadFile = File(...)):
-    """
-    Acum folosim LAZY LOADING.
-    Modelul se încarcă în memorie DOAR când cineva face o poză.
-    Astfel, Login și Register vor merge mereu rapid.
-    """
     global image_classifier
+    try:
+        # 1. Citim și redimensionăm imaginea IMEDIAT
+        # O imagine de 128x128 ocupă mult mai puțin RAM decât una originală
+        image_bytes = await file.read()
+        image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+        image = image.resize((128, 128))
 
-    # --- AICI ESTE SECRETUL CA SĂ NU CRAPE SERVERUL ---
-    if image_classifier is None:
-        print("⏳ Loading AI Model on demand... (Please wait)")
-        # Încărcăm modelul doar acum
-        image_classifier = pipeline("image-classification", model="google/vit-base-patch16-224")
-        print("✅ AI Model Loaded!")
+        # 2. Încărcăm modelul cel mai mic (MobileNetV2 are doar ~14MB)
+        if image_classifier is None:
+            print("⏳ Loading Small AI Model (MobileNetV2)...")
+            image_classifier = pipeline("image-classification", model="google/mobilenet_v2_1.0_224")
 
-    # 1. Citește imaginea
-    image_bytes = await file.read()
-    image = Image.open(io.BytesIO(image_bytes))
+        # 3. Clasificăm
+        predictions = image_classifier(image)
 
-    # 2. Clasifică imaginea
-    predictions = image_classifier(image)
-    top = predictions[0]
+        # 4. ELIBERARE FORȚATĂ RAM (Secretul pentru planul gratuit)
+        # Ștergem datele grele și chemăm Garbage Collector
+        del image
+        del image_bytes
+        gc.collect()
 
-    name = top["label"]
-    confidence = round(top["score"] * 100, 2)
+        top = predictions[0]
+        name = top["label"]
+        name_lower = name.lower()
 
-    # Logica estimare alcool
-    estimated_abv = 5.0
-    name_lower = name.lower()
+        # Logică estimare alcool
+        estimated_abv = 5.0
+        if any(x in name_lower for x in ["vodka", "whisky", "cognac", "gin", "rum", "tequila", "spirit"]):
+            estimated_abv = 40.0
+        elif any(x in name_lower for x in ["wine", "champagne", "prosecco", "claret"]):
+            estimated_abv = 12.0
+        elif "beer" in name_lower or "pilsner" in name_lower:
+            estimated_abv = 5.0
 
-    if any(x in name_lower for x in ["vodka", "whisky", "cognac", "gin", "rum", "tequila"]):
-        estimated_abv = 40.0
-    elif any(x in name_lower for x in ["wine", "champagne", "prosecco"]):
-        estimated_abv = 12.0
-    elif "cocktail" in name_lower:
-        estimated_abv = 15.0
+        return {
+            "name": name.capitalize(),
+            "abv": estimated_abv,
+            "confidence": round(top["score"] * 100, 2)
+        }
 
-    return {
-        "name": name,
-        "abv": estimated_abv,
-        "confidence": confidence
-    }
+    except Exception as e:
+        print(f"❌ CRASH RAM: {e}")
+        return {"name": "Eroare Procesare", "abv": 0.0, "confidence": 0}
+
+
+

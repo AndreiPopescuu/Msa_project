@@ -13,9 +13,10 @@ class ApiClient {
   // Inițializare Dio
   final Dio _dio = Dio(
     BaseOptions(
-      baseUrl: baseUrl, 
-      connectTimeout: const Duration(seconds: 15), // Am mărit puțin timpul pentru că serverul Free poate fi lent uneori
-      receiveTimeout: const Duration(seconds: 15),
+      baseUrl: baseUrl,
+      connectTimeout: const Duration(seconds: 120), // 2 minute
+      receiveTimeout: const Duration(seconds: 120),
+      sendTimeout: const Duration(seconds: 120),    // Foarte important pentru upload
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',

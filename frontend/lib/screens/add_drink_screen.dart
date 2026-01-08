@@ -1,9 +1,9 @@
 import 'dart:io'; 
-import 'package:flutter/foundation.dart' show kIsWeb; // <--- Import pentru a detecta Web-ul
+import 'package:flutter/foundation.dart' show kIsWeb; // Pentru detectare Web
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart'; 
 import 'package:shared_preferences/shared_preferences.dart';
-import '../core/api/api_client.dart';
+import '../core/api/api_client.dart'; // Asigură-te că calea este corectă (services sau core/api)
 
 class AddDrinkScreen extends StatefulWidget {
   const AddDrinkScreen({super.key});
@@ -22,21 +22,23 @@ class _AddDrinkScreenState extends State<AddDrinkScreen> {
   final _strengthCtrl = TextEditingController();
 
   bool _loading = false;
-  XFile? _pickedFile; // <--- Păstrăm fișierul original (XFile) pentru compatibilitate Web
+  XFile? _pickedFile; 
 
-  // --- LOGICA DE SCANARE ---
+  // --- LOGICA DE SCANARE (AICI ESTE SECRETUL) ---
   Future<void> _scanDrink() async {
     try {
-      // 1. Deschide camera (sau galeria)
+      // 1. Deschide camera
+      // În add_drink_screen.dart
       final XFile? photo = await _picker.pickImage(
-        source: ImageSource.camera, 
-        imageQuality: 50, 
+        source: ImageSource.camera,
+        imageQuality: 15,  // Calitate foarte mică
+        maxWidth: 300,     // Dimensiune foarte mică
       );
       
       if (photo == null) return; 
 
       setState(() {
-        _pickedFile = photo; // Salvăm referința pentru afișare
+        _pickedFile = photo; 
         _loading = true; 
       });
 
@@ -44,15 +46,17 @@ class _AddDrinkScreenState extends State<AddDrinkScreen> {
         const SnackBar(content: Text('AI-ul analizează eticheta...')),
       );
 
-      // 2. Trimite la Server (folosind XFile direct)
+      // 2. Trimite la Server
       final response = await api.identifyDrink(photo);
 
-      // 3. Completează câmpurile cu ce a găsit AI-ul
+      // 3. Verifică răspunsul
       if (response.statusCode == 200) {
         final data = response.data;
         
         setState(() {
           _nameCtrl.text = data['name'] ?? '';
+          
+          // Tratăm cazul în care vine int sau double
           if (data['abv'] != null) {
             _strengthCtrl.text = data['abv'].toString();
           }
@@ -61,12 +65,16 @@ class _AddDrinkScreenState extends State<AddDrinkScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Identificare reușită! Verifică datele.')),
         );
-      } 
+      } else {
+         ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('AI-ul nu a răspuns corect (Server Error).')),
+        );
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Nu s-a putut identifica băutura.')),
+        const SnackBar(content: Text('Nu s-a putut trimite poza. Verifică internetul.')),
       );
-      print("Eroare AI: $e");
+      print("Eroare AI Scan: $e");
     } finally {
       setState(() => _loading = false);
     }
@@ -78,11 +86,16 @@ class _AddDrinkScreenState extends State<AddDrinkScreen> {
 
     try {
       final prefs = await SharedPreferences.getInstance();
-      final int? storedUserId = prefs.getInt('user_id');
+      final int? storedUserId = prefs.getInt('user_id'); // Asigură-te că cheia e 'user_id' sau 'userId'
 
-      if (storedUserId == null) return;
+      if (storedUserId == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Eroare: Nu ești logat!')),
+          );
+          return;
+      }
 
-      // FIX: Înlocuim virgula cu punctul pentru siguranță (ex: "5,5" -> "5.5")
+      // FIX: Siguranță pentru virgulă vs punct
       double volume = double.parse(_volumeCtrl.text.replaceAll(',', '.'));
       double strength = double.parse(_strengthCtrl.text.replaceAll(',', '.'));
 
@@ -97,15 +110,18 @@ class _AddDrinkScreenState extends State<AddDrinkScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Băutură salvată cu succes!')),
       );
+      
+      // Ne întoarcem la ecranul anterior (Home)
       Navigator.pop(context);
+      
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Eroare: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Eroare la salvare: $e')));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
   }
 
-  // --- FUNCȚIE PENTRU AFIȘAREA IMAGINII (WEB vs MOBILE) ---
+  // --- FUNCȚIE PENTRU PREVIEW POZĂ ---
   Widget _buildImagePreview() {
     if (_pickedFile == null) {
       return Column(
@@ -118,7 +134,6 @@ class _AddDrinkScreenState extends State<AddDrinkScreen> {
       );
     }
 
-    // Pe Web folosim NetworkImage cu path-ul blob-ului, pe Mobile folosim File
     if (kIsWeb) {
       return Image.network(_pickedFile!.path, fit: BoxFit.cover);
     } else {
@@ -138,7 +153,7 @@ class _AddDrinkScreenState extends State<AddDrinkScreen> {
             children: [
               // --- ZONA DE POZĂ ---
               GestureDetector(
-                onTap: _scanDrink,
+                onTap: _loading ? null : _scanDrink, // Blocăm click-ul dacă încarcă
                 child: Container(
                   height: 200,
                   width: double.infinity,
@@ -147,12 +162,16 @@ class _AddDrinkScreenState extends State<AddDrinkScreen> {
                     borderRadius: BorderRadius.circular(15),
                     border: Border.all(color: Colors.blueAccent),
                   ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(15),
-                    child: _buildImagePreview(), // <--- Folosim funcția inteligentă
-                  ),
+                  child: _loading 
+                    ? const Center(child: CircularProgressIndicator()) 
+                    : ClipRRect(
+                        borderRadius: BorderRadius.circular(15),
+                        child: _buildImagePreview(),
+                      ),
                 ),
               ),
+              const SizedBox(height: 10),
+              const Text("Apasă pe imagine pentru a scana cu AI", style: TextStyle(color: Colors.grey)),
               const SizedBox(height: 20),
 
               // --- FORMULARUL ---
@@ -189,20 +208,20 @@ class _AddDrinkScreenState extends State<AddDrinkScreen> {
               ),
               const SizedBox(height: 30),
               
-              _loading
-                  ? const CircularProgressIndicator()
-                  : SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed: _submitDrink,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          foregroundColor: Colors.white,
-                        ),
-                        child: const Text('Salvează în Istoric', style: TextStyle(fontSize: 18)),
-                      ),
-                    ),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: _loading ? null : _submitDrink,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: _loading 
+                    ? const Text('Se procesează...')
+                    : const Text('Salvează în Istoric', style: TextStyle(fontSize: 18)),
+                ),
+              ),
             ],
           ),
         ),
