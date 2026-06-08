@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // <--- 1. IMPORT NECESAR
+import 'package:shared_preferences/shared_preferences.dart';
 import '../core/api/api_client.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -29,38 +29,27 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _loading = true);
 
     try {
-      // 1. Apelăm API-ul
       final response = await api.login(_emailCtrl.text, _passCtrl.text);
 
-      // 2. Dacă Login-ul a reușit
       if (response.statusCode == 200) {
-        final data = response.data; // Datele primite de la backend (JSON)
+        final data = response.data;
 
-        // 3. SALVĂM DATELE ÎN TELEFON (SharedPreferences)
         final prefs = await SharedPreferences.getInstance();
-        
-        // Salvăm user_id-ul (esențial pentru AddDrink)
         if (data['user_id'] != null) {
           await prefs.setInt('user_id', data['user_id']);
         }
-        
-        // Salvăm și numele (opțional, pentru afișare în Home/Profil)
         if (data['username'] != null) {
           await prefs.setString('user_name', data['username']);
         }
 
-        // 4. Navigăm către Home
         if (mounted) {
-           // Nu mai e nevoie să trimitem argumente, pentru că le-am salvat global în telefon
            Navigator.pushReplacementNamed(context, '/home');
         }
       }
     } on DioException catch (e) {
-      // Gestionăm erorile specifice de rețea/backend
       String message = 'A apărut o eroare';
-      
+
       if (e.response != null) {
-        // Mesaj de la backend (ex: "Parolă incorectă")
         message = e.response?.data['detail'] ?? 'Date incorecte';
       } else {
         message = 'Nu se poate conecta la server. Verifică conexiunea.';

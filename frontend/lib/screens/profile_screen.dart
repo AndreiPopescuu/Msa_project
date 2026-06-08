@@ -13,7 +13,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   final api = ApiClient();
   
-  // Controllere pentru câmpuri
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _weightController = TextEditingController();
   final TextEditingController _heightController = TextEditingController();
@@ -27,16 +26,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _loadCurrentData();
   }
 
-  // Încărcăm datele actuale din telefon (sau ai putea să le ceri de la server)
   Future<void> _loadCurrentData() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       userId = prefs.getInt('user_id');
       _nameController.text = prefs.getString('user_name') ?? '';
-      
-      // Aici punem valori default dacă nu avem salvat nimic încă
-      // Ideal ar fi să le luăm din backend la login
-      double w = prefs.getDouble('user_weight') ?? 75.0; 
+      double w = prefs.getDouble('user_weight') ?? 75.0;
       double h = prefs.getDouble('user_height') ?? 175.0;
       
       _weightController.text = w.toString();
@@ -54,11 +49,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     double newWeight = double.tryParse(_weightController.text) ?? 70.0;
     double newHeight = double.tryParse(_heightController.text) ?? 170.0;
 
-    // 1. Trimitem la Server
     bool success = await api.updateUserProfile(userId!, newName, newWeight, newHeight);
 
     if (success) {
-      // 2. Salvăm și local în telefon ca să ținem minte
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('user_name', newName);
       await prefs.setDouble('user_weight', newWeight);
@@ -68,7 +61,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Profil actualizat cu succes! ✅')),
         );
-        Navigator.pop(context, true); // Ne întoarcem cu "true" ca să dăm refresh la Home
+        Navigator.pop(context, true);
       }
     } else {
       if (mounted) {
@@ -98,7 +91,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 30),
               
-              // --- NUME ---
               TextFormField(
                 controller: _nameController,
                 decoration: const InputDecoration(
@@ -110,7 +102,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 20),
 
-              // --- GREUTATE & ÎNĂLȚIME (Pe același rând) ---
               Row(
                 children: [
                   Expanded(
@@ -142,7 +133,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 40),
 
-              // --- BUTON SAVE ---
               SizedBox(
                 width: double.infinity,
                 height: 50,

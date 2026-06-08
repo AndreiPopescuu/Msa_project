@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/api/api_client.dart';
-import '../main.dart'; // Importăm pentru themeNotifier
+import '../main.dart';
 import 'add_drink_screen.dart';
-import 'stats_screen.dart'; // Asigură-te că ai acest import
+import 'stats_screen.dart';
 import 'profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -118,19 +118,16 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: const Icon(Icons.person),
             tooltip: 'Profil',
             onPressed: () async {
-              // Așteptăm să se întoarcă de la profil
               final result = await Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const ProfileScreen()),
               );
-              // Dacă a dat save (result == true), reîncărcăm numele pe Home
               if (result == true) {
                 _refreshData();
               }
             },
           ),
 
-          // --- 1. AICI AM FĂCUT CURĂȚENIE (Doar 3 butoane) ---
           IconButton(
             icon: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode),
             tooltip: 'Schimbă Tema',
@@ -144,7 +141,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
-                // --- CARD SOBRIETATE ---
                 Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: Card(
@@ -191,12 +187,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
 
-                // --- LISTA ---
                 Expanded(
                   child: drinksHistory.isEmpty
                       ? const Center(child: Text("Nu ai băut nimic încă.", style: TextStyle(color: Colors.grey)))
                       : ListView.builder(
-                          padding: const EdgeInsets.only(bottom: 100), // Spațiu jos pentru butoane
+                          padding: const EdgeInsets.only(bottom: 100),
                           itemCount: sortedDates.length,
                           itemBuilder: (context, index) {
                             String dateKey = sortedDates[index];
@@ -251,17 +246,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ],
             ),
-      
-      // --- 2. ZONA DE BUTOANE JOS (Stânga & Dreapta) ---
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat, // Le centrăm ca să avem control
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20), // Margini stânga-dreapta
+        padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween, // Unul la stânga, unul la dreapta
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // BUTON STATISTICI (STÂNGA)
             FloatingActionButton(
-              heroTag: "btnStats", // <--- CRITIC: Tag unic
+              heroTag: "btnStats",
               backgroundColor: isDarkMode ? Colors.grey[800] : Colors.white,
               foregroundColor: Colors.blue,
               onPressed: () {
@@ -275,9 +267,8 @@ class _HomeScreenState extends State<HomeScreen> {
               child: const Icon(Icons.bar_chart),
             ),
 
-            // BUTON ADAUGĂ (DREAPTA)
             FloatingActionButton.extended(
-              heroTag: "btnAdd", // <--- CRITIC: Tag unic
+              heroTag: "btnAdd",
               onPressed: () async {
                 await Navigator.push(
                   context,

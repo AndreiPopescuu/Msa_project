@@ -6,30 +6,21 @@ from schemas import UserCreate, DrinkCreate
 from dotenv import load_dotenv
 from pydantic import BaseModel
 import io
-import os
+
 from fastapi.middleware.cors import CORSMiddleware
 from transformers import pipeline
 from PIL import Image
 
-# --- IMPORTURI MODELE (Corectate pentru a evita erori) ---
-# Asigură-te că ai fișierele: models/user.py și models/drink.py
 from models.user import User
 from models.drink import Drink
 
-# -----------------------------
-#  Inițializare
-# -----------------------------
 load_dotenv()
 Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
-origins = [
-    "*",  # Permite accesul de oriunde
-]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -44,17 +35,9 @@ def get_db():
         db.close()
 
 
-# -----------------------------
-#  AI Component (MODIFICAT PENTRU RENDER FREE TIER)
-# -----------------------------
-# ⚠️ FOARTE IMPORTANT:
-# Nu încărcăm modelul aici! Îl lăsăm None ca serverul să poată porni rapid.
 image_classifier = None
 
 
-# -----------------------------
-#  Scheme
-# -----------------------------
 class LoginRequest(BaseModel):
     email: str
     password: str
@@ -66,9 +49,6 @@ class UserUpdate(BaseModel):
     height: float
 
 
-# -----------------------------
-#  Endpointuri
-# -----------------------------
 @app.get("/")
 def home():
     return {"message": "Backend FastAPI + PostgreSQL running 🚀"}
@@ -143,22 +123,18 @@ import gc
 async def identify_drink(file: UploadFile = File(...)):
     global image_classifier
     try:
-        # 1. Citim și redimensionăm imaginea IMEDIAT
-        # O imagine de 128x128 ocupă mult mai puțin RAM decât una originală
         image_bytes = await file.read()
         image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
         image = image.resize((128, 128))
 
-        # 2. Încărcăm modelul cel mai mic (MobileNetV2 are doar ~14MB)
         if image_classifier is None:
             print("⏳ Loading Small AI Model (MobileNetV2)...")
             image_classifier = pipeline("image-classification", model="google/mobilenet_v2_1.0_224")
 
-        # 3. Clasificăm
+
         predictions = image_classifier(image)
 
-        # 4. ELIBERARE FORȚATĂ RAM (Secretul pentru planul gratuit)
-        # Ștergem datele grele și chemăm Garbage Collector
+
         del image
         del image_bytes
         gc.collect()
@@ -167,9 +143,8 @@ async def identify_drink(file: UploadFile = File(...)):
         name = top["label"]
         name_lower = name.lower()
 
-        # Logică estimare alcool
         estimated_abv = 5.0
-        if any(x in name_lower for x in ["vodka", "whisky", "cognac", "gin", "rum", "tequila", "spirit"]):
+        if any(x in name_lower for x in ["vodka", "whisky", "cognac", "gin", "rum", "tequila", "spirit", "whiskey"]):
             estimated_abv = 40.0
         elif any(x in name_lower for x in ["wine", "champagne", "prosecco", "claret"]):
             estimated_abv = 12.0
